@@ -1,0 +1,87 @@
+#!/bin/bash
+
+function setup_config_directory() {
+    local directory="$1"
+    local env_leave_file="${directory}/.env.leave"
+    local file="${directory}/kubeconfig"
+
+    if [[ ! -L "$env_leave_file" ]]; then
+        ln -s "${directory}/../.env.leave" "$env_leave_file"
+    fi
+
+    # check config is working
+    if ! kubectl --kubeconfig="$file" version >/dev/null 2>&1 ; then
+        echo "ERROR: This is not valid kubeconfig!: $file "
+    else
+        local config
+        # get cluster and user name
+        IFS=' ' read -ra config <<< "$(kubectl config --kubeconfig="$file" view -o go-template='{{ (index .clusters 0).name }} {{ (index .users 0).name }}')"
+
+        # is this default config?
+        if [[ "${config[0]}" == "kubernetes" ]] && \
+            { [[ "${config[1]}" == "kubernetes-admin" ]] || \
+             [[ "${config[1]}" == "cluster-admin" ]]; }; then
+
+            local config_name="${directory##*/}"
+
+            echo "Change to distinguishable config for $config_name"
+            echo
+
+            echo "Current config will back up to $file.bak"
+            cp "$file" "$file".bak
+
+            local old_cluster_name="${config[0]}"
+            local old_user_name="${config[1]}"
+
+            local cluster_name="$old_cluster_name-$config_name"
+            local user_name="$old_user_name-$config_name"
+
+            # copy cluster information
+            # shellcheck disable=SC2016
+            for i in $(kubectl config --kubeconfig="$file" view --raw -o go-template='{{ range $key, $value := ((index .clusters 0).cluster) }}{{ printf "%s\n" $key }}{{ end }}'); do
+                local value
+                value=$(kubectl config --kubeconfig="$file" view --raw -o go-template="{{ index ((index .clusters 0).cluster) \"$i\" }}")
+                kubectl config --kubeconfig="$file" set clusters."$cluster_name"."$i" "$value"
+            done
+
+            # copy user information
+            # shellcheck disable=SC2016
+            for i in $(kubectl config --kubeconfig="$file" view --raw -o go-template='{{ range $key, $value := ((index .users 0).user) }}{{ printf "%s\n" $key }}{{ end }}'); do
+                local value
+                value=$(kubectl config --kubeconfig="$file" view --raw -o go-template="{{ index ((index .users 0).user) \"$i\" }}")
+                kubectl config --kubeconfig="$file" set users."$user_name"."$i" "$value"
+            done
+
+            # set context
+            kubectl config --kubeconfig="$file" set-context "$user_name@$cluster_name" --cluster "$cluster_name" --user "$user_name"
+            kubectl config --kubeconfig="$file" use-context "$user_name@$cluster_name"
+
+            # delete old datas
+            kubectl config --kubeconfig="$file" unset clusters."$old_cluster_name"
+            kubectl config --kubeconfig="$file" unset users."$old_user_name"
+            kubectl config --kubeconfig="$file" unset contexts."$old_user_name@$old_cluster_name"
+
+            echo
+        fi
+    fi
+}
+
+function merge_kubeconfig() {
+    if [ -z "$KUBECONFIG" ]; then
+        KUBECONFIG="${HOME}/.kube/config"
+    fi
+
+    local dir
+    dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+    for d in $(echo "$dir"/*/); do
+        setup_config_directory "${d%?}"
+
+        KUBECONFIG="$KUBECONFIG:${d}kubeconfig"
+    done
+
+    export KUBECONFIG=$KUBECONFIG
+
+    kubectl config view --raw
+    echo
+}
