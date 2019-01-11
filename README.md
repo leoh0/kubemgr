@@ -9,6 +9,8 @@ kubernetes 는 cluster config를 context를 통해 관리하기 때문에 다수
 * 각각의 config를 directory로 관리하고 이를 merge 해서 `${HOME}/.kube/config` 를 생성함으로 손쉽게 특정 cluster config를 추가/제거 가능합니다.
 * `kubeadm` 등과 같은 툴로 전부 동일하게 생성된 config들을 자동으로 디렉토리 이름에 맞게 변경해서 손쉽게 등록 가능합니다.
 
+[![asciicast](https://asciinema.org/a/220863.svg)](https://asciinema.org/a/220863)
+
 ## 사전 준비
 
 * [autoenv 설치](https://github.com/kennethreitz/autoenv) 참고
