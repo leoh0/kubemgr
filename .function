@@ -11,7 +11,7 @@ function setup_config_directory() {
 
     # check config is working
     if ! kubectl --kubeconfig="$file" version >/dev/null 2>&1 ; then
-        echo "ERROR: This is not valid kubeconfig!: $file "
+        echo "ERROR: This is not valid kubeconfig!: $file " >&2
     else
         local config
         # get cluster and user name
@@ -71,6 +71,23 @@ function merge_kubeconfig() {
         KUBECONFIG="${HOME}/.kube/config"
     fi
 
+    local dir
+    dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+    for d in $(echo "$dir"/*/); do
+        setup_config_directory "${d%?}"
+
+        KUBECONFIG="$KUBECONFIG:${d}kubeconfig"
+    done
+
+    export KUBECONFIG=$KUBECONFIG
+
+    kubectl config view --raw
+    echo
+}
+
+function build_kubeconfig() {
+    local KUBECONFIG
     local dir
     dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 

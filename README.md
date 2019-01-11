@@ -96,17 +96,21 @@ KubeDNS is running at https://192.168.64.3:8443/api/v1/namespaces/kube-system/se
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-### 디렉토리들의 컨피그와 기존 컨피그의 병합한 결과 보기
+### 컨피그 제거
 
-현재 디렉토리들 안의 config들과 `${HOME}/.kube/config`를 합쳐서 stdout으로 출력해줍니다.
+해당 디렉토리를 삭제 합니다.
+
+### 디렉토리들의 컨피그와 기존 컨피그의 병합
+
+현재 디렉토리들 안의 config들과 `${HOME}/.kube/config`를 합쳐서 기존의 `${HOME}/.kube/config`를 교체해서 저장 할 수 있도록 합니다.
 
 ```bash
 ./merge.sh
 ```
 
-### 디렉토리들의 컨피그와 기존 컨피그를 병합하여 기존 컨피그를 대체 하기
+### 디렉토리들의 컨피그를 병합하여 기존 컨피그를 교체
 
-현재 디렉토리들 안의 config들과 `${HOME}/.kube/config`를 합치고 기존의 `${HOME}/.kube/config`를 교체해서 저장 할 수 있도록 합니다.
+현재 디렉토리들 안의 config들을 합쳐서 기존의 `${HOME}/.kube/config`를 교체해서 저장 할 수 있도록 합니다.
 
 ```bash
 ./replace.sh
