@@ -75,7 +75,7 @@ function merge_kubeconfig() {
     dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
     for d in $(echo "$dir"/*/); do
-        setup_config_directory "${d%?}"
+        setup_config_directory "${d%?}" >/dev/null 2>&1
 
         KUBECONFIG="$KUBECONFIG:${d}kubeconfig"
     done
@@ -92,7 +92,7 @@ function build_kubeconfig() {
     dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
     for d in $(echo "$dir"/*/); do
-        setup_config_directory "${d%?}"
+        setup_config_directory "${d%?}" >/dev/null 2>&1
 
         KUBECONFIG="$KUBECONFIG:${d}kubeconfig"
     done
