@@ -117,3 +117,20 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```bash
 ./replace.sh
 ```
+
+### 병합이나 교체에서 제외하고 싶은 디렉토리 설정
+
+만약 병합이나 교체에서 제외하고 싶은 디렉토리가 있다면 디렉토리 시작을 `.`로 시작하도록 설정 하면 됩니다.
+
+```
+$ tree
+.
+├── LICENSE
+├── merge.sh
+├── README.md
+├── replace.sh
+├── cluster1
+│   └── kubeconfig
+└── .cluster2       # 디렉토리 시작이 .으로 시작하는 경우
+    └── kubeconfig  # 이 컨피그는 병합이나 교체의 대상이 되지 않습니다.
+```
