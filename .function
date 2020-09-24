@@ -15,7 +15,11 @@ function setup_config_directory() {
     else
         local config
         # get cluster and user name
-        IFS=' ' read -ra config <<< "$(kubectl config --kubeconfig="$file" view -o go-template='{{ (index .clusters 0).name }} {{ (index .users 0).name }}')"
+	if [[ "$SHELL" == "/bin/zsh" ]]; then
+            IFS=' ' read -rA config <<< "$(kubectl config --kubeconfig="$file" view -o go-template='{{ (index .clusters 0).name }} {{ (index .users 0).name }}')"
+	else
+            IFS=' ' read -ra config <<< "$(kubectl config --kubeconfig="$file" view -o go-template='{{ (index .clusters 0).name }} {{ (index .users 0).name }}')"
+	fi
 
         # is this default config?
         if [[ "${config[0]}" == "kubernetes" ]] && \
